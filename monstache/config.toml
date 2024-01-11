@@ -1,4 +1,4 @@
-# mongo-url = <add cloud url here>
+# mongo-url = <url>
 
 elasticsearch-urls = ["http://elasticsearch:9200"]
 
