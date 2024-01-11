@@ -1,0 +1,59 @@
+version: '3.7'
+
+services:  
+  api:
+    image: docker.io/library/search-service-api:latest
+    environment:
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL}
+    ports:
+      - 8080:8080
+    depends_on:
+      - elasticsearch
+    networks:
+      - search
+
+  elasticsearch:
+    hostname: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - search
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.3
+    environment:
+      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_URL}
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    networks:
+      - search
+
+  monstache:
+    image: rwynn/monstache:rel6
+    restart: always
+    working_dir: /monstache
+    command: -f ./config.toml
+    depends_on:
+      - elasticsearch
+    networks:
+      - search
+    volumes:
+      - ./monstache:/monstache
+
+networks:
+  search:
+
+volumes:
+  monstache:
+  elasticsearch:
+    driver: 
+      local
