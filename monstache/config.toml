@@ -1,4 +1,4 @@
-# mongo-url = <url>
+mongo-url = "mongodb+srv://kkrypt:uniquecarbon@epoch.gsbkqce.mongodb.net/?retryWrites=true&w=majority"
 
 elasticsearch-urls = ["http://elasticsearch:9200"]
 

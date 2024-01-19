@@ -1,19 +1,27 @@
 package main
 
 import (
-    "os"
 	"log"
+	"os"
 
+	"github.com/CS559-CSD-IITBH/search-service/routes"
+	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
-    "github.com/CS559-CSD-IITBH/search-service/routes"
 )
 
 func main() {
-    err := godotenv.Load()
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatalln("Internal server error: Unable to load the env file")
 	}
 
-	r := routes.SetupRouter()
+	store := sessions.NewFilesystemStore("sessions/", []byte("secret-key"))
+
+	store.Options = &sessions.Options{
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
+	}
+
+	r := routes.SetupRouter(store)
 	r.Run(":" + os.Getenv("PORT"))
 }

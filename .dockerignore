@@ -2,4 +2,4 @@
 .gitignore
 docker-compose.yml
 ./elasticsearch
-./monstache
+README.md
