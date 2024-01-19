@@ -30,15 +30,7 @@ func init() {
 	esClient = es
 }
 
-func ElasticQuery(term string) ([]models.Store, error) {
-	query := map[string]interface{}{
-		"query": map[string]interface{}{
-			"match": map[string]interface{}{
-				"Items.Name": term,
-			},
-		},
-	}
-
+func ElasticQuery(query map[string]interface{}) ([]models.Store, error) {
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
 		return nil, err
@@ -93,13 +85,55 @@ func ElasticQuery(term string) ([]models.Store, error) {
 	return results, nil
 }
 
-func SearchHandler(c *gin.Context) {
+func GlobalSearch(c *gin.Context) {
 	searchTerm := c.Param("keyword")
 
-	results, err := ElasticQuery(searchTerm)
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"match": map[string]interface{}{
+				"Items.Name": searchTerm,
+			},
+		},
+	}
+
+	results, err := ElasticQuery(query)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Error executing search query",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, results)
+}
+
+func StoreSearch(c *gin.Context) {
+	storeID := c.Param("storeID")
+	searchTerm := c.Query("keyword")
+
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": []map[string]interface{}{
+					{
+						"match": map[string]interface{}{
+							"Items.Name": searchTerm,
+						},
+					},
+					{
+						"match": map[string]interface{}{
+							"StoreID": storeID,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	results, err := ElasticQuery(query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Error executing store-specific search query",
 		})
 		return
 	}
